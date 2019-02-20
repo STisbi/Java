@@ -39,7 +39,7 @@ public class Server
 		}
 		
 		// Server Info
-		System.out.println("Server Info: Server started, waiting for client on port " + Integer.toString(server.getPort()));
+		System.out.println("Server Info: Server started, waiting for client on port " + Integer.toString(portNumber));
 		
 		// Accept your connection to the client
 		try

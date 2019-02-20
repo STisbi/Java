@@ -61,12 +61,14 @@ public class Client
 		}
 	}
 	
-	public void run()
+	public void run() throws IOException
 	{
 		System.out.println("Client Info: Waiting for user to send a command to the server.");
+		
+		output.write(portNumber);
 	}
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		Client client = new Client();
 		

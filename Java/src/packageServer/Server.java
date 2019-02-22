@@ -2,6 +2,7 @@ package packageServer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -9,14 +10,15 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import packageData.Data;
 
 public class Server
 {
-	private int portNumber = 8080;
+	private int command = 0;
 	
-	private String portName = "localhost";
+	private final int portNumber = 8080;
+	
+	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageServer\\Files";
 	
 	private ServerSocket socket = null;
 	
@@ -89,12 +91,19 @@ public class Server
 			System.err.println("Server Error: Error occurred in setting up input streams.");
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public void run() throws IOException
 	{
 		// Server info
 		System.out.println("Server Info: Waiting for client command.");
+		
+		// READ - Get the client command
+		command = input.read();
+		
+		// WRITE - Send the acknowledgement
+		output.write(command);
 		
 		try
 		{
@@ -107,13 +116,12 @@ public class Server
 			e.printStackTrace();
 		}
 		
-		switch (clientData.getCommand())
+		switch (command)
 		{
 			// UPLOAD from client to server
 			case 1:
 			{
-				System.out.println("Server Info: Client requested file upload.");
-				
+				System.out.println("Server Info: Uploading " + clientData.getFileName());
 				
 				break;
 			}
@@ -135,7 +143,7 @@ public class Server
 			// An unknown command
 			default:
 			{
-				System.err.println("Server Error: Recieved the unsupported command: " + Integer.toString(clientData.getCommand()));
+				System.err.println("Server Error: Recieved the unsupported command: " + Integer.toString(command));
 			}
 		}
 	}

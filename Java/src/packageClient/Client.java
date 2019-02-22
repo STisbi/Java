@@ -2,21 +2,31 @@ package packageClient;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import packageData.Data;
 
 public class Client
 {
-	private int portNumber = 8080;
+	private int command = 0;
+	
+	private final int portNumber = 8080;
 
-	private String portName = "localhost";
+	private final String portName = "localhost";
+	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageClient\\Files";
+	
+	private ArrayList<File> fileList = new ArrayList<File>();
+	
+	private final HashMap<Integer, String> cmdList = new HashMap<Integer, String>();
 
 	private Scanner reader = new Scanner(System.in);
 
@@ -75,6 +85,14 @@ public class Client
 			System.err.println("Server Error: Error occurred in setting up input streams.");
 			e.printStackTrace();
 		}
+		
+		cmdList.put(1, "UPLOAD");
+		cmdList.put(2, "DOWNLOAD");
+		cmdList.put(3, "DELETE");
+		cmdList.put(4, "RENAME");
+		
+		// Get the list of files currently in the file folder
+		updateFileList();
 	}
 
 	public void run() throws IOException
@@ -90,10 +108,70 @@ public class Client
 						   "RENAME");
 		
 		// Get user input
-		clientData.setCommand(reader.nextInt());
+		command = reader.nextInt();
 		
-		// WRITE - Send the data to the server
-		objOut.writeObject(clientData);
+		// WRITE - Send the command to the server
+		output.write(command);
+		
+		// READ - Get the server acknowledgement
+		int response = input.read();
+		
+		// If the server responds with the same command, it was acknowledged properly
+		if (response == command)
+		{
+			switch (command)
+			{
+				// UPLOAD
+				case 1:
+				{	
+					System.out.println("Enter the number corresponding to the file to be uploaded.");
+					
+					for (int i = 0; i < this.fileList.size(); i++)
+					{
+						System.out.println(Integer.toString(i + 1) + ". " + fileList.get(i));
+					}
+					
+					// Get the user's file choice
+					int choice = reader.nextInt() - 1;
+					
+					// Set the corresponding file and file name in the data
+					clientData.setFile(fileList.get(choice));
+					clientData.setFileName(fileList.get(choice).getName());
+					
+					System.out.println("Client Info: Uploading " + clientData.getFileName());
+					
+					break;
+				}
+				// DOWNLOAD
+				case 2:
+				{
+					break;
+				}
+				// DELETE
+				case 3:
+				{
+					break;
+				}
+				// RENAME
+				case 4:
+				{
+					break;
+				}
+				// An unknown command
+				default:
+				{
+					System.err.println("Client Error: Recieved the unsupported command: " + Integer.toString(command));
+				}
+			}
+			
+			// WRITE - Send the data to the server
+			objOut.writeObject(clientData);
+		}
+		else
+		{
+			// Client info
+			System.err.println("Client Error: The client requested " + cmdList.get(command) + " but the server imporperly acknowledge a " + cmdList.get(response));
+		}
 	}
 
 	public void close() throws IOException
@@ -118,6 +196,26 @@ public class Client
 
 		// Close the client
 		client.close();
+	}
+	
+	private void updateFileList()
+	{
+		File folder = new File(filePath);
+		ArrayList<File> fileList = new ArrayList<File>();
+		
+		// Add files from the file folder 
+		for (File file : folder.listFiles())
+		{
+			String ext = file.getName().substring(file.getName().indexOf("."));
+			
+			// Don't add Java or Class files
+			if (!ext.equalsIgnoreCase("java") || !ext.equalsIgnoreCase("class"))
+			{
+				fileList.add(file);
+			}
+		}
+		
+		this.fileList = fileList;
 	}
 
 	public static void main(String[] args) throws IOException

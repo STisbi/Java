@@ -3,6 +3,8 @@ package packageClient;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -22,7 +24,7 @@ public class Client
 	private final int portNumber = 8080;
 
 	private final String portName = "localhost";
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageClient\\Files";
+	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageClient\\Files\\";
 	
 	private ArrayList<File> fileList = new ArrayList<File>();
 	
@@ -32,13 +34,16 @@ public class Client
 
 	private Socket client = null;
 
-	private InputStream input = null;
+	private InputStream  input  = null;
 	private OutputStream output = null;
+	
+	private FileInputStream  fileIn  = null;
+	private FileOutputStream fileOut = null;
 
-	private DataInputStream dataIn = null;
+	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
 
-	private ObjectInputStream objIn = null;
+	private ObjectInputStream  objIn  = null;
 	private ObjectOutputStream objOut = null;
 	
 	Data clientData = new Data();
@@ -114,10 +119,19 @@ public class Client
 		output.write(command);
 		
 		// READ - Get the server acknowledgement
-		int response = input.read();
+		try
+		{
+			// READ - Get the server data object
+			serverData = (Data) objIn.readObject();
+		} 
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Client Error: Failed to cast server object to type Data.");
+			e.printStackTrace();
+		}
 		
 		// If the server responds with the same command, it was acknowledged properly
-		if (response == command)
+		if (serverData.getCommand() == command)
 		{
 			switch (command)
 			{
@@ -135,7 +149,7 @@ public class Client
 					int choice = reader.nextInt() - 1;
 					
 					// Set the corresponding file and file name in the data
-					clientData.setFile(fileList.get(choice));
+					clientData.setFileData(fileList.get(choice).toPath());
 					clientData.setFileName(fileList.get(choice).getName());
 					
 					System.out.println("Client Info: Uploading " + clientData.getFileName());
@@ -170,7 +184,7 @@ public class Client
 		else
 		{
 			// Client info
-			System.err.println("Client Error: The client requested " + cmdList.get(command) + " but the server imporperly acknowledge a " + cmdList.get(response));
+			System.err.println("Client Error: The client requested " + cmdList.get(command) + " but the server imporperly acknowledge a " + cmdList.get(serverData.getCommand()));
 		}
 	}
 

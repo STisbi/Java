@@ -3,6 +3,7 @@ package packageServer;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -10,6 +11,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+
 import packageData.Data;
 
 public class Server
@@ -18,7 +21,9 @@ public class Server
 	
 	private final int portNumber = 8080;
 	
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageServer\\Files";
+	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageServer\\Files\\";
+	
+	private ArrayList<File> fileList = new ArrayList<File>();
 	
 	private ServerSocket socket = null;
 	
@@ -26,6 +31,8 @@ public class Server
 	
 	private InputStream  input  = null;
 	private OutputStream output = null;
+	
+	FileOutputStream fileOut = null;
 	
 	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
@@ -92,6 +99,8 @@ public class Server
 			e.printStackTrace();
 		}
 		
+		
+		updateFileList();
 	}
 	
 	public void run() throws IOException
@@ -102,8 +111,11 @@ public class Server
 		// READ - Get the client command
 		command = input.read();
 		
-		// WRITE - Send the acknowledgement
-		output.write(command);
+		// Set the command received from the client as an acknowledgement within Data
+		serverData.setCommand(command);
+		
+		// WRITE - Send the acknowledgement contained within the data object
+		objOut.writeObject(serverData);
 		
 		try
 		{
@@ -122,6 +134,11 @@ public class Server
 			case 1:
 			{
 				System.out.println("Server Info: Uploading " + clientData.getFileName());
+				
+				// Create a file stream, write the file from the client data to the server, then close the stream
+				fileOut = new FileOutputStream(filePath + clientData.getFileName());
+				fileOut.write(clientData.getFileData());
+				fileOut.close();
 				
 				break;
 			}
@@ -146,6 +163,8 @@ public class Server
 				System.err.println("Server Error: Recieved the unsupported command: " + Integer.toString(command));
 			}
 		}
+		
+		
 	}
 	
 	public void close() throws IOException
@@ -167,6 +186,30 @@ public class Server
 		
 		// Close the client
 		server.close();
+	}
+	
+	private void updateFileList()
+	{
+		File folder = new File(filePath);
+		ArrayList<File> fileList = new ArrayList<File>();
+		
+		// Add files from the file folder 
+		for (File file : folder.listFiles())
+		{
+			String ext = file.getName().substring(file.getName().indexOf("."));
+			
+			// Don't add Java or Class files
+			if (!ext.equalsIgnoreCase("java") || !ext.equalsIgnoreCase("class"))
+			{
+				fileList.add(file);
+			}
+		}
+		
+		// Update the local copy of all the files on the server
+		this.fileList = fileList;
+		
+		// Update the Data object that the client gets with all the files on the server
+		serverData.setServerFiles(fileList);
 	}
 	
 	public static void main(String [] args) throws IOException

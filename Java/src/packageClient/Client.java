@@ -83,7 +83,7 @@ public class Client
 		System.out.println("Client Info: Waiting for user to send a command to the server.");
 		
 		// Ask the user for input
-		System.out.println("Please select an option by entering the corresponding number:\n" + 
+		System.out.println("\nPlease select an option by entering the corresponding number:\n" + 
 		                   "UPLOAD\n"   +
 						   "DOWNLOAD\n" +
 		                   "DELETE\n"   + 

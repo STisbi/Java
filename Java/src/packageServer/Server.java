@@ -113,26 +113,29 @@ public class Server
 			case 1:
 			{
 				System.out.println("Server Info: Client requested file upload.");
+				
+				
+				break;
 			}
 			// DOWNLOAD to client from server
 			case 2:
 			{
-				
+				break;
 			}
 			// DELETE a file on the server
 			case 3:
 			{
-				
+				break;
 			}
 			// RENAME a file on the server
 			case 4:
 			{
-				
+				break;
 			}
 			// An unknown command
 			default:
 			{
-				System.err.println("System Error: Recieved the unsupported command: " + Integer.toString(clientData.getCommand()));
+				System.err.println("Server Error: Recieved the unsupported command: " + Integer.toString(clientData.getCommand()));
 			}
 		}
 	}
@@ -163,5 +166,7 @@ public class Server
 		Server server = new Server();
 		
 		server.run();
+		
+		server.close();
 	}
 }

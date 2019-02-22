@@ -4,13 +4,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import packageData.Data;
+
 public class Server
 {
-	private int command    = 0;
 	private int portNumber = 8080;
 	
 	private String portName = "localhost";
@@ -24,6 +27,12 @@ public class Server
 	
 	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
+	
+	private ObjectInputStream  objIn  = null;
+	private ObjectOutputStream objOut = null;
+	
+	Data serverData = new Data();
+	Data clientData = new Data();
 	
 	public Server()
 	{
@@ -58,8 +67,9 @@ public class Server
 		// Setup the output streams
 		try
 		{
-			output = server.getOutputStream();
+			output  = server.getOutputStream();
 			dataOut = new DataOutputStream(server.getOutputStream());
+			objOut  = new ObjectOutputStream(server.getOutputStream());
 		}
 		catch (IOException e)
 		{
@@ -70,8 +80,9 @@ public class Server
 		// Setup the input streams
 		try
 		{
-			input = server.getInputStream();
+			input  = server.getInputStream();
 			dataIn = new DataInputStream(server.getInputStream());
+			objIn  = new ObjectInputStream(server.getInputStream()); 
 		}
 		catch (IOException e)
 		{
@@ -85,15 +96,23 @@ public class Server
 		// Server info
 		System.out.println("Server Info: Waiting for client command.");
 		
-		// READ - Get the client command
-		command = input.read();
+		try
+		{
+			// READ - Get the client data object
+			clientData = (Data) objIn.readObject();
+		} 
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Server Error: Failed to cast client object to type Data.");
+			e.printStackTrace();
+		}
 		
-		switch (command)
+		switch (clientData.getCommand())
 		{
 			// UPLOAD from client to server
 			case 1:
 			{
-				
+				System.out.println("Server Info: Client requested file upload.");
 			}
 			// DOWNLOAD to client from server
 			case 2:
@@ -113,9 +132,30 @@ public class Server
 			// An unknown command
 			default:
 			{
-				System.err.println("System Error: Recieved the unsupported command: " + Integer.toString(command));
+				System.err.println("System Error: Recieved the unsupported command: " + Integer.toString(clientData.getCommand()));
 			}
 		}
+	}
+	
+	public void close() throws IOException
+	{
+		// Client info
+		System.out.println("Server Info: Closing streams, sockets, and the server connection.");
+		
+		// Close data streams
+		dataIn.close();
+		dataOut.close();
+		
+		// Close object streams
+		objIn.close();
+		objOut.close();
+		
+		// Close socket streams
+		input.close();
+		output.close();
+		
+		// Close the client
+		server.close();
 	}
 	
 	public static void main(String [] args) throws IOException

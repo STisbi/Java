@@ -2,8 +2,6 @@ package remote;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -11,8 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import data.Data;
 
@@ -22,18 +19,12 @@ public class Server
 	
 	private final int portNumber = 8080;
 	
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageServer\\Files\\";
-	
-	private ArrayList<File> fileList = new ArrayList<File>();
-	
 	private ServerSocket socket = null;
 	
 	private Socket server = null;
 	
 	private InputStream  input  = null;
 	private OutputStream output = null;
-	
-	private FileOutputStream fileOut = null;
 	
 	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
@@ -59,8 +50,6 @@ public class Server
 		
 		// Server Info
 		System.out.print("\nServer Info: Server started.");
-		
-		updateFileList();
 	}
 	
 	public void run() throws IOException
@@ -93,74 +82,38 @@ public class Server
 		
 		switch (command)
 		{
-			// UPLOAD from client to server
+			// Get Pi
 			case 1:
 			{
-				System.out.println("Server Info: Receiving " + clientData.getFileName());
+				System.out.println("Server Info: Sending the value of Pi");
 				
-				// Create a file stream, write the file from the client data to the server, then close the stream
-				fileOut = new FileOutputStream(this.filePath + clientData.getFileName());
-				fileOut.write(clientData.getFileData());
-				fileOut.close();
+				calculate_pi();
 				
 				break;
 			}
 			// DOWNLOAD to client from server
 			case 2:
 			{
-				System.out.println("Server Info: Sending " + clientData.getFileName());
+				System.out.println("Server Info: Calculating the sum of: " + clientData.getAddend1() + " and " + clientData.getAddend2());
 				
-				// A new Data object has to be sent, otherwise the client receives null
-				// I'm not sure why this is
-				Data fileData = new Data();
-				
-				Path path = null;
-				for (File file : fileList)
-				{
-					if (file.getName().equalsIgnoreCase(clientData.getFileName()))
-					{
-						path = file.toPath();
-					}
-				}
-				
-				fileData.setFileName(clientData.getFileName());
-				fileData.setFileData(path);
-				
-				// WRITE - Test 3
-				objOut.writeObject(fileData);
-				objOut.flush();
+				add(clientData.getAddend1(), clientData.getAddend2());
 				
 				break;
 			}
 			// DELETE a file on the server
 			case 3:
 			{
-				System.out.println("Server Info: Deleting " + clientData.getFileName());
+				System.out.println("Server Info: Sorting the given array.");
 				
-				for (File file : fileList)
-				{
-					if (file.getName().equalsIgnoreCase(clientData.getFileName()))
-					{
-						file.delete();
-					}
-				}
+				sort(clientData.getArrayA());
 				
 				break;
 			}
 			// RENAME a file on the server
 			case 4:
 			{
-				System.out.println("Server Info: Renaming " + clientData.getFileName() + " to " + clientData.getNewFileName());
+				System.out.println("Server Info: Multiplying the given matrices.");
 				
-				for (File file : fileList)
-				{
-					if (file.getName().equalsIgnoreCase(clientData.getFileName()))
-					{
-						File newFile = new File(filePath + clientData.getNewFileName());
-						
-						file.renameTo(newFile);
-					}
-				}
 				
 				break;
 			}
@@ -170,9 +123,6 @@ public class Server
 				System.err.println("Server Error: Recieved the unsupported command: " + Integer.toString(command));
 			}
 		}
-		
-		updateFileList();
-		printFilesOnServer();
 		
 	}
 	
@@ -241,41 +191,38 @@ public class Server
 		}
 	}
 	
-	private void updateFileList()
+	private void calculate_pi() throws IOException
 	{
-		File folder = new File(filePath);
-		ArrayList<File> fileList = new ArrayList<File>();
+		Data piData = new Data();
 		
-		// Add files from the file folder 
-		for (File file : folder.listFiles())
-		{
-			String ext = file.getName().substring(file.getName().indexOf("."));
-			
-			// Don't add Java or Class files
-			if (!ext.equalsIgnoreCase("java") || !ext.equalsIgnoreCase("class"))
-			{
-				fileList.add(file);
-			}
-		}
+		piData.setPi(Math.PI);
 		
-		// Update the local copy of all the files on the server
-		this.fileList = fileList;
-		
-		// Update the Data object that the client gets with all the files on the server
-		serverData.setServerFiles(fileList);
+		// WRITE - Send the value of Pi back to the client
+		objOut.writeObject(piData);
 	}
 	
-	private void printFilesOnServer()
+	private void add(int i, int j) throws IOException
 	{
-		System.out.println("\nFiles currently on server:");
+		Data sumData = new Data();
 		
-		int i = 0;
+		sumData.setSum(i + j);
 		
-		for (File file : fileList)
-		{
-			System.out.println(Integer.toString(++i) + ". " + file.getName());
-		}
+		// WRITE - Send the sum back
+		objOut.writeObject(sumData);
 	}
+	
+	private void sort(int[] arrayA) throws IOException
+	{
+		Data sortedData = new Data();
+		
+		Arrays.sort(arrayA);
+		
+		sortedData.setArrayA(arrayA);
+		
+		// WRITE - Send the sorted array back
+		objOut.writeObject(sortedData);
+	}
+	
 	
 	public static void main(String [] args) throws IOException
 	{

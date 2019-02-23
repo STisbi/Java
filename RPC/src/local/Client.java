@@ -2,15 +2,12 @@ package local;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import data.Data;
@@ -22,9 +19,6 @@ public class Client
 	private final int portNumber = 8080;
 
 	private final String portName = "localhost";
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Java\\src\\packageClient\\Files\\";
-	
-	private ArrayList<File> fileList = new ArrayList<File>();
 	
 	private final HashMap<Integer, String> cmdList = new HashMap<Integer, String>();
 
@@ -34,8 +28,6 @@ public class Client
 
 	private InputStream  input  = null;
 	private OutputStream output = null;
-	
-	private FileOutputStream fileOut = null;
 
 	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
@@ -92,9 +84,6 @@ public class Client
 		cmdList.put(2, "DOWNLOAD");
 		cmdList.put(3, "DELETE");
 		cmdList.put(4, "RENAME");
-		
-		// Get the list of files currently in the file folder
-		updateFileList();
 	}
 
 	public void run() throws IOException
@@ -104,10 +93,10 @@ public class Client
 		
 		// Ask the user for input
 		System.out.println("\nPlease select an option by entering the corresponding number:\n" + 
-		                   "1. UPLOAD\n"   +
-						   "2. DOWNLOAD\n" +
-		                   "3. DELETE\n"   + 
-						   "4. RENAME");
+		                   "1. Calculate Pi\n"   +
+						   "2. Add 2 Integers\n" +
+		                   "3. Sort An Integer Array\n"   + 
+						   "4. Multiply 3 Matrices");
 		
 		// Get user input
 		command = reader.nextInt();
@@ -133,91 +122,36 @@ public class Client
 		{
 			switch (command)
 			{
-				// UPLOAD
+				// CALCUATE PI
 				case 1:
 				{	
-					System.out.println("Enter the number corresponding to the file to be uploaded.");
+					System.out.println("Client Info: Calculating the value of Pi.");
+
+					double pi = calculate_pi();
 					
-					for (int i = 0; i < this.fileList.size(); i++)
-					{
-						System.out.println(Integer.toString(i + 1) + ". " + fileList.get(i));
-					}
-					
-					// Get the user's file choice
-					int choice = reader.nextInt() - 1;
-					
-					// Set the corresponding file and file name in the data
-					clientData.setFileData(fileList.get(choice).toPath());
-					clientData.setFileName(fileList.get(choice).getName());
-					
-					System.out.println("Client Info: Uploading " + clientData.getFileName());
-					
-					// WRITE - Send the file to the server
-					objOut.writeObject(clientData);
-					objOut.flush();
+					System.out.println("The value of Pi is " + pi);
 					
 					break;
 				}
-				// DOWNLOAD
+				// ADD
 				case 2:
 				{
-					System.out.println("Enter the number corresponding to the file to be downloaded.");
+					System.out.print("Enter the first addend: ");
+					int i = reader.nextInt();
 					
-					for (int i = 0; i < serverData.getServerFiles().size(); i++)
-					{
-						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
-					}
+					System.out.print("Enter the second added: ");
+					int j = reader.nextInt();
 					
-					// Get the user's file choice
-					int choice = reader.nextInt() - 1;
+					int sum = add(i, j);
 					
-					// Set the file name to be downloaded
-					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
-					
-					// WRITE - Send this out to the server
-					objOut.writeObject(clientData);
-					objOut.flush();
-					
-					System.out.println("Client Info: Downloading " + clientData.getFileName());
-					
-					try
-					{
-						// READ - Get the file from the server
-						serverData = (Data) objIn.readObject();
-					}
-					catch (ClassNotFoundException e)
-					{
-						System.err.println("Client Error: Failed to cast server object to type Data.");
-						e.printStackTrace();
-					}
-					
-					fileOut = new FileOutputStream(this.filePath + serverData.getFileName());
-					fileOut.write(serverData.getFileData());
-					fileOut.close();
+					System.out.println("The sum of " + i + " and " + j + " is " + sum);
 					
 					break;
 				}
-				// DELETE
+				// SORT
 				case 3:
 				{
 					System.out.println("Enter the number corresponding to the file to be deleted.");
-					
-					for (int i = 0; i < serverData.getServerFiles().size(); i++)
-					{
-						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
-					}
-					
-					// Get the user input
-					int choice = reader.nextInt() - 1;
-					
-					// Set the file name to be deleted
-					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
-					
-					System.out.println("Client Info: " + serverData.getServerFiles().get(choice).getName() + " will be deleted.");
-					
-					// WRITE - Send this information to the server
-					objOut.writeObject(clientData);
-					objOut.flush();
 					
 					break;
 				}
@@ -226,30 +160,6 @@ public class Client
 				{
 					System.out.println("Enter the number corresponding to the file to be renamed.");
 					
-					for (int i = 0; i < serverData.getServerFiles().size(); i++)
-					{
-						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
-					}
-					
-					// Get the user input
-					int choice = reader.nextInt() - 1;
-					
-					System.out.print("Enter the new name for the file " + serverData.getServerFiles().get(choice).getName() + ": ");
-					
-					// Get the new name
-					String name = reader.next();
-					
-					// Set the name of the file to be changed
-					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
-					
-					// Set the new name
-					clientData.setNewFileName(name);
-					
-					System.out.println("Client Info: " + serverData.getServerFiles().get(choice).getName() + " will be renamed to " + clientData.getNewFileName());
-					
-					// WRITE - Send out the new file name
-					objOut.writeObject(clientData);
-					objOut.flush();
 					
 					break;
 				}
@@ -291,24 +201,49 @@ public class Client
 		client.close();
 	}
 	
-	private void updateFileList()
+	private double calculate_pi() throws IOException
 	{
-		File folder = new File(filePath);
-		ArrayList<File> fileList = new ArrayList<File>();
+		Data piData = new Data();
 		
-		// Add files from the file folder 
-		for (File file : folder.listFiles())
+		// WRITE - Send for the value of pi from the server
+		objOut.writeObject(piData);
+		
+		try
 		{
-			String ext = file.getName().substring(file.getName().indexOf("."));
-			
-			// Don't add Java or Class files
-			if (!ext.equalsIgnoreCase("java") || !ext.equalsIgnoreCase("class"))
-			{
-				fileList.add(file);
-			}
+			// READ - Get the value of pi from the server
+			piData = (Data) objIn.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Client Error: Failed to cast server object to type Data.");
+			e.printStackTrace();
 		}
 		
-		this.fileList = fileList;
+		return piData.getPi();
+	}
+	
+	private int add(int i, int j) throws IOException
+	{
+		Data addendData = new Data();
+		
+		addendData.setAddend1(i);
+		addendData.setAddend2(j);
+		
+		// WRITE - Send the addend's to the server
+		objOut.writeObject(addendData);
+		
+		try
+		{
+			// READ - Get the sum of i and j from the server
+			serverData = (Data) objIn.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Client Error: Failed to cast server object to type Data.");
+			e.printStackTrace();
+		}
+		
+		return serverData.getSum();
 	}
 
 	public static void main(String[] args) throws IOException

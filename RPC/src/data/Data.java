@@ -1,26 +1,25 @@
 package data;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 
 // Serializable was needed so that this object could be sent over the socket
 public class Data implements Serializable
 {
 	private int command = 0;
+	private int addend1 = Integer.MAX_VALUE;
+	private int addend2 = Integer.MAX_VALUE;
+	private int sum     = Integer.MAX_VALUE;
 	
-	private String fileName    = "";
-	private String newFileName = ""; 
+	private double pi   = Double.MAX_VALUE;
+	
+	private int[] arrayA = null;
+	private int[] matrixA = null;
+	private int[] matrixB = null;
+	private int[] matrixC = null;
 	
 	// This was required to get rid of a warning for using serializable
 	private static final long serialVersionUID = 1L;
 
-	private byte[] fileData = null;
-	
-	private ArrayList<File> serverFiles = new ArrayList<File>();
 	
 	public void setCommand(int command)
 	{
@@ -31,53 +30,84 @@ public class Data implements Serializable
 	{
 		return this.command;
 	}
-
-	public void setFileName(String fileName)
+	
+	public void setAddend1(int addend1)
 	{
-		this.fileName = fileName;
-	}
-
-	public String getFileName()
-	{
-		return this.fileName;
+		this.addend1 = addend1;
 	}
 	
-	public void setNewFileName(String newFileName)
+	public int getAddend1()
 	{
-		this.newFileName = newFileName;
+		return this.addend1;
 	}
 	
-	public String getNewFileName()
+	public void setAddend2(int addend2)
 	{
-		return this.newFileName;
+		this.addend2 = addend2;
+	}
+	
+	public int getAddend2()
+	{
+		return this.addend2;
+	}
+	
+	public void setSum(int sum)
+	{
+		this.sum = sum;
+	}
+	
+	public int getSum()
+	{
+		return this.sum;
 	}
 
-	public void setFileData(Path path)
+	public void setPi(Double pi)
 	{
-		try
-		{
-			this.fileData = Files.readAllBytes(path);
-		}
-		catch (IOException e)
-		{
-			System.err.println("Unable to read file data to byte array.");
-			e.printStackTrace();
-		}
-	}
-
-	public byte[] getFileData()
-	{
-		return this.fileData;
+		this.pi = pi;
 	}
 	
-	public void setServerFiles(ArrayList<File> serverFiles)
+	public double getPi()
 	{
-		this.serverFiles = serverFiles;
+		return this.pi;
 	}
 	
-	public ArrayList<File> getServerFiles()
+	public void setArrayA(int[] arrayA)
 	{
-		return this.serverFiles;
+		this.arrayA = arrayA;
+	}
+	
+	public int[] getArrayA()
+	{
+		return this.arrayA;
+	}
+	
+	public void setMatrixA(int[] matrixA)
+	{
+		this.matrixA = matrixA;
+	}
+	
+	public int[] getMatrixA()
+	{
+		return this.matrixA;
+	}
+	
+	public void setMatrixB(int[] matrixB)
+	{
+		this.matrixB = matrixB;
+	}
+	
+	public int[] getMatrixB()
+	{
+		return this.matrixB;
+	}
+	public void setMatrixC(int[] matrixC)
+	{
+		this.matrixC = matrixC;
+	}
+	
+	public int[] getMatrixC()
+	{
+		return this.matrixC;
 	}
 
 }

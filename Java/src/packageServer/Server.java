@@ -281,12 +281,12 @@ public class Server
 	{
 		Server server = new Server();
 		
-		for (int i = 0; i < 2; i++)
+		while (true)
 		{
 			server.run();
 		}
 		
-		server.close();
+		// server.close();
 
 	}
 }

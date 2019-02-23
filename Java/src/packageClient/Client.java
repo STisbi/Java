@@ -3,7 +3,6 @@ package packageClient;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +13,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-
 import packageData.Data;
 
 public class Client
@@ -37,7 +35,6 @@ public class Client
 	private InputStream  input  = null;
 	private OutputStream output = null;
 	
-	private FileInputStream  fileIn  = null;
 	private FileOutputStream fileOut = null;
 
 	private DataInputStream  dataIn  = null;
@@ -107,10 +104,10 @@ public class Client
 		
 		// Ask the user for input
 		System.out.println("\nPlease select an option by entering the corresponding number:\n" + 
-		                   "UPLOAD\n"   +
-						   "DOWNLOAD\n" +
-		                   "DELETE\n"   + 
-						   "RENAME");
+		                   "1. UPLOAD\n"   +
+						   "2. DOWNLOAD\n" +
+		                   "3. DELETE\n"   + 
+						   "4. RENAME");
 		
 		// Get user input
 		command = reader.nextInt();
@@ -118,7 +115,7 @@ public class Client
 		// WRITE - Send the command to the server
 		output.write(command);
 		
-		// READ - Get the server acknowledgement
+		// Get the server acknowledgement
 		try
 		{
 			// READ - Get the server data object
@@ -154,21 +151,70 @@ public class Client
 					
 					System.out.println("Client Info: Uploading " + clientData.getFileName());
 					
+					// WRITE - Send the file to the server
+					objOut.writeObject(clientData);
+					
 					break;
 				}
 				// DOWNLOAD
 				case 2:
 				{
+					System.out.println("Enter the number corresponding to the file to be downloaded.");
+					
 					break;
 				}
 				// DELETE
 				case 3:
 				{
+					System.out.println("Enter the number corresponding to the file to be deleted.");
+					
+					for (int i = 0; i < serverData.getServerFiles().size(); i++)
+					{
+						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
+					}
+					
+					// Get the user input
+					int choice = reader.nextInt() - 1;
+					
+					// Set the file name to be deleted
+					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
+					
+					System.out.println("Client Info: " + serverData.getServerFiles().get(choice).getName() + " will be deleted.");
+					
+					// WRITE - Send this information to the server
+					objOut.writeObject(clientData);
+					
 					break;
 				}
 				// RENAME
 				case 4:
 				{
+					System.out.println("Enter the number corresponding to the file to be renamed.");
+					
+					for (int i = 0; i < serverData.getServerFiles().size(); i++)
+					{
+						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
+					}
+					
+					// Get the user input
+					int choice = reader.nextInt() - 1;
+					
+					System.out.print("Enter the new name for the file " + serverData.getServerFiles().get(choice).getName() + ": ");
+					
+					// Get the new name
+					String name = reader.next();
+					
+					// Set the name of the file to be changed
+					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
+					
+					// Set the new name
+					clientData.setNewFileName(name);
+					
+					System.out.println("Client Info: " + serverData.getServerFiles().get(choice).getName() + " will be renamed to " + clientData.getNewFileName());
+					
+					// WRITE - Send out the new file name
+					objOut.writeObject(clientData);
+					
 					break;
 				}
 				// An unknown command
@@ -177,9 +223,6 @@ public class Client
 					System.err.println("Client Error: Recieved the unsupported command: " + Integer.toString(command));
 				}
 			}
-			
-			// WRITE - Send the data to the server
-			objOut.writeObject(clientData);
 		}
 		else
 		{

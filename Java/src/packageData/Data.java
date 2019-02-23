@@ -12,7 +12,8 @@ public class Data implements Serializable
 {
 	private int command = 0;
 	
-	private String fileName = "";
+	private String fileName    = "";
+	private String newFileName = ""; 
 	
 	// This was required to get rid of a warning for using serializable
 	private static final long serialVersionUID = 1L;
@@ -39,6 +40,16 @@ public class Data implements Serializable
 	public String getFileName()
 	{
 		return this.fileName;
+	}
+	
+	public void setNewFileName(String newFileName)
+	{
+		this.newFileName = newFileName;
+	}
+	
+	public String getNewFileName()
+	{
+		return this.newFileName;
 	}
 
 	public void setFileData(Path path)

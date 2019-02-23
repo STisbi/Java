@@ -33,7 +33,7 @@ public class Server
 	private InputStream  input  = null;
 	private OutputStream output = null;
 	
-	FileOutputStream fileOut = null;
+	private FileOutputStream fileOut = null;
 	
 	private DataInputStream  dataIn  = null;
 	private DataOutputStream dataOut = null;
@@ -78,6 +78,7 @@ public class Server
 		
 		// WRITE - Send the acknowledgement contained within the data object
 		objOut.writeObject(serverData);
+		objOut.flush();
 		
 		try
 		{
@@ -98,7 +99,7 @@ public class Server
 				System.out.println("Server Info: Receiving " + clientData.getFileName());
 				
 				// Create a file stream, write the file from the client data to the server, then close the stream
-				fileOut = new FileOutputStream(filePath + clientData.getFileName());
+				fileOut = new FileOutputStream(this.filePath + clientData.getFileName());
 				fileOut.write(clientData.getFileData());
 				fileOut.close();
 				
@@ -108,6 +109,26 @@ public class Server
 			case 2:
 			{
 				System.out.println("Server Info: Sending " + clientData.getFileName());
+				
+				// A new Data object has to be sent, otherwise the client receives null
+				// I'm not sure why this is
+				Data fileData = new Data();
+				
+				Path path = null;
+				for (File file : fileList)
+				{
+					if (file.getName().equalsIgnoreCase(clientData.getFileName()))
+					{
+						path = file.toPath();
+					}
+				}
+				
+				fileData.setFileName(clientData.getFileName());
+				fileData.setFileData(path);
+				
+				// WRITE - Test 3
+				objOut.writeObject(fileData);
+				objOut.flush();
 				
 				break;
 			}

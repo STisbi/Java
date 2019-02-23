@@ -114,6 +114,7 @@ public class Client
 		
 		// WRITE - Send the command to the server
 		output.write(command);
+		output.flush();
 		
 		// Get the server acknowledgement
 		try
@@ -153,6 +154,7 @@ public class Client
 					
 					// WRITE - Send the file to the server
 					objOut.writeObject(clientData);
+					objOut.flush();
 					
 					break;
 				}
@@ -160,6 +162,38 @@ public class Client
 				case 2:
 				{
 					System.out.println("Enter the number corresponding to the file to be downloaded.");
+					
+					for (int i = 0; i < serverData.getServerFiles().size(); i++)
+					{
+						System.out.println(Integer.toString(i + 1) + ". " + serverData.getServerFiles().get(i).getName());
+					}
+					
+					// Get the user's file choice
+					int choice = reader.nextInt() - 1;
+					
+					// Set the file name to be downloaded
+					clientData.setFileName(serverData.getServerFiles().get(choice).getName());
+					
+					// WRITE - Send this out to the server
+					objOut.writeObject(clientData);
+					objOut.flush();
+					
+					System.out.println("Client Info: Downloading " + clientData.getFileName());
+					
+					try
+					{
+						// READ - Get the file from the server
+						serverData = (Data) objIn.readObject();
+					}
+					catch (ClassNotFoundException e)
+					{
+						System.err.println("Client Error: Failed to cast server object to type Data.");
+						e.printStackTrace();
+					}
+					
+					fileOut = new FileOutputStream(this.filePath + serverData.getFileName());
+					fileOut.write(serverData.getFileData());
+					fileOut.close();
 					
 					break;
 				}
@@ -183,6 +217,7 @@ public class Client
 					
 					// WRITE - Send this information to the server
 					objOut.writeObject(clientData);
+					objOut.flush();
 					
 					break;
 				}
@@ -214,13 +249,14 @@ public class Client
 					
 					// WRITE - Send out the new file name
 					objOut.writeObject(clientData);
+					objOut.flush();
 					
 					break;
 				}
 				// An unknown command
 				default:
 				{
-					System.err.println("Client Error: Recieved the unsupported command: " + Integer.toString(command));
+					System.err.println("Client Error: Received the unsupported command: " + Integer.toString(command));
 				}
 			}
 		}
@@ -247,7 +283,7 @@ public class Client
 		objIn.close();
 		objOut.close();
 
-		// Close socket streams
+		// Close general streams
 		input.close();
 		output.close();
 

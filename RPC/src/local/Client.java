@@ -1,13 +1,20 @@
 package local;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
@@ -20,6 +27,9 @@ public class Client
 	private final int portNumber = 8080;
 
 	private final String portName = "localhost";
+	private final String filePath = "C:\\Users\\STisb\\git\\Java\\RPC\\src\\local\\Files\\";
+	
+	private ArrayList<File> fileList = new ArrayList<File>();
 	
 	private final HashMap<Integer, String> cmdList = new HashMap<Integer, String>();
 
@@ -85,6 +95,8 @@ public class Client
 		cmdList.put(2, "DOWNLOAD");
 		cmdList.put(3, "DELETE");
 		cmdList.put(4, "RENAME");
+		
+		updateFileList();
 	}
 
 	public void run() throws IOException
@@ -174,8 +186,12 @@ public class Client
 				// RENAME
 				case 4:
 				{
-					System.out.println("Enter the number corresponding to the file to be renamed.");
+					System.out.println("Select the input matrix file");
 					
+					printLocalFiles();
+					int choice = reader.nextInt() - 1;
+					
+					parseMatrixFile(fileList.get(choice));
 					
 					break;
 				}
@@ -283,6 +299,44 @@ public class Client
 		}
 		
 		return serverData.getArrayA();
+	}
+	
+	private void parseMatrixFile(File file)
+	{
+		System.out.println("Multiplying matrices in file " + file.getName());
+	}
+	
+	private void updateFileList()
+	{
+		File folder = new File(filePath);
+		ArrayList<File> fileList = new ArrayList<File>();
+		
+		// Add files from the file folder 
+		for (File file : folder.listFiles())
+		{
+			String ext = file.getName().substring(file.getName().indexOf("."));
+			
+			// Don't add Java or Class files
+			if (!ext.equalsIgnoreCase("java") || !ext.equalsIgnoreCase("class"))
+			{
+				fileList.add(file);
+			}
+		}
+		
+		// Update the local copy of all the files on the server
+		this.fileList = fileList;
+	}
+	
+	private void printLocalFiles()
+	{
+		System.out.println("\nFiles available locally:");
+		
+		int i = 0;
+		
+		for (File file : fileList)
+		{
+			System.out.println(Integer.toString(++i) + ". " + file.getName());
+		}
 	}
 
 	public static void main(String[] args) throws IOException

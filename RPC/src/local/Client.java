@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import data.Data;
@@ -151,7 +152,22 @@ public class Client
 				// SORT
 				case 3:
 				{
-					System.out.println("Enter the number corresponding to the file to be deleted.");
+					System.out.print("Enter the lenth of the array: ");
+					int length = reader.nextInt();
+					
+					int[] arrayA = new int[length];
+					
+					System.out.println("Enter " + length + " integers, pressing enter after each one.");
+					
+					for (int i  = 0; i < length; i++)
+					{
+						System.out.print("Value " + (i + 1) + ": ");
+						arrayA[i] = reader.nextInt();
+					}
+					
+					int[] sortedArray = sort(arrayA);
+					
+					System.out.println("The unsorted array " + Arrays.toString(arrayA) + " was sorted to " + Arrays.toString(sortedArray));
 					
 					break;
 				}
@@ -244,6 +260,29 @@ public class Client
 		}
 		
 		return serverData.getSum();
+	}
+	
+	private int[] sort(int[] arrayA) throws IOException
+	{
+		Data sortedData = new Data();
+		
+		sortedData.setArrayA(arrayA);
+		
+		// WRITE - Send the unsorted array to the server
+		objOut.writeObject(sortedData);
+		
+		try
+		{
+			// READ - Get the sum of i and j from the server
+			serverData = (Data) objIn.readObject();
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Client Error: Failed to cast server object to type Data.");
+			e.printStackTrace();
+		}
+		
+		return serverData.getArrayA();
 	}
 
 	public static void main(String[] args) throws IOException

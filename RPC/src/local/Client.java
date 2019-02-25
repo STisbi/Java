@@ -1,19 +1,14 @@
 package local;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,7 +22,7 @@ public class Client
 	private final int portNumber = 8080;
 
 	private final String portName = "localhost";
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\RPC\\src\\local\\Files\\";
+	private final String filePath = System.getProperty("user.dir") + "\\src\\local\\Files\\";
 	
 	private ArrayList<File> fileList = new ArrayList<File>();
 	

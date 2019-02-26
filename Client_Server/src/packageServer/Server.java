@@ -22,7 +22,7 @@ public class Server
 	
 	private final int portNumber = 8080;
 	
-	private final String filePath = "C:\\Users\\STisb\\git\\Java\\Client_Server\\src\\packageServer\\Files\\";
+	private final String filePath = System.getProperty("user.dir") + "\\src\\packageServer\\Files\\";
 	
 	private ArrayList<File> fileList = new ArrayList<File>();
 	
@@ -58,7 +58,7 @@ public class Server
 		}
 		
 		// Server Info
-		System.out.print("\nServer Info: Server started.");
+		System.out.print("\nServer Info: Server started." + filePath);
 		
 		updateFileList();
 	}

@@ -85,7 +85,7 @@ public class CountDownLatchDemo
 	final static int THREADCOUNT = 2;
 	
 	/**
-	 * Creats and runs the specified number of threads.
+	 * Creates and runs the specified number of threads.
 	 * 
 	 * @param args Command line arguments that are not used.
 	 * 

@@ -2,7 +2,9 @@ package server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -10,8 +12,10 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Semaphore;
 
 import data.Data;
+import data.Utilities;
 
 public class ServerThread extends Thread
 {	
@@ -22,6 +26,8 @@ public class ServerThread extends Thread
 	String threadName = "";
 	String serverInfo = "";
 	String serverError = "";
+	
+	Semaphore semaphore = null;
 	
 	ServerSocket socket = null;
 	
@@ -40,9 +46,14 @@ public class ServerThread extends Thread
 	
 	Data data = new Data();
 	
+	File file = null;
 	
-	public ServerThread(String threadName)
+	FileWriter fileWriter = null;
+	
+	public ServerThread(String threadName, Semaphore semaphore, File file)
 	{
+		this.file        = file;
+		this.semaphore   = semaphore;
 		this.threadName  = threadName;
 		this.portNumber  = Integer.parseInt(threadName);
 		this.serverInfo  = "Thread " + threadName + ": ";
@@ -69,7 +80,62 @@ public class ServerThread extends Thread
 			e.printStackTrace();
 		}
 		
-		System.out.println("READ: " + "Client's PID is " + clientPID);
+		System.out.println(serverInfo + "READ: " + "Client's PID is " + clientPID);
+		
+		////////////////////////////
+		//                        //
+		// CRITICAL SECTION START //
+		//                        //
+		////////////////////////////
+		
+		try
+		{
+			// Blocks if no permits are available
+			this.semaphore.acquire();
+		}
+		catch (InterruptedException e1)
+		{
+			System.err.println(serverError + "Interrupted while waiting to acquire semaphore.");
+			e1.printStackTrace();
+		}
+		
+		try
+		{
+			fileWriter = new FileWriter(file);
+			
+			CharSequence seq = serverInfo + Long.toString(clientPID) + Utilities.NEWLINE;
+			
+			fileWriter.append(seq.toString());
+			
+			fileWriter.close();
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		
+		// Release the semaphore
+		this.semaphore.release();
+		
+		//////////////////////////
+		//                      //
+		// CRITICAL SECTION END //
+		//                      //
+		//////////////////////////
+		
+		Data outData = new Data();
+		
+		// WRITE - OBJECT - Send an acknowledgement message back to the client
+		outData.setMessage("File accessed.");
+		try
+		{
+			objOut.writeObject(outData);
+		}
+		catch (IOException e1)
+		{
+			e1.printStackTrace();
+		}
+		System.out.println(serverInfo + "WRITE");
 		
 		try
 		{
@@ -77,6 +143,7 @@ public class ServerThread extends Thread
 		}
 		catch (IOException e)
 		{
+			System.err.println(serverError + "Failed to close connection on port:" + Integer.toString(portNumber));
 			e.printStackTrace();
 		}
 	}

@@ -8,6 +8,8 @@ public class Data implements Serializable
 	
 	long clientPID = 0;
 	
+	String message = "";
+	
 	
 	public long getClientPID()
 	{
@@ -18,5 +20,17 @@ public class Data implements Serializable
 	public void setClientPID(long clientPID)
 	{
 		this.clientPID = clientPID;
+	}
+	
+	
+	public String getMessage()
+	{
+		return this.message;
+	}
+	
+	
+	public void setMessage(String message)
+	{
+		this.message = message;
 	}
 }

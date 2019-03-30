@@ -1,7 +1,5 @@
 package client;
 
-import java.io.File;
-
 import data.Utilities;
 
 public class Client
@@ -10,10 +8,8 @@ public class Client
 	
 	static final String JAVAHOME  = System.getProperty("java.home");
 	static final String CLASSPATH = System.getProperty("java.class.path");
-	static final String NEWLINE   = System.lineSeparator();
-	static final String SEPARATOR = File.separator;
 	
-	static final String JAVABIN = JAVAHOME + SEPARATOR + "bin" + SEPARATOR + "java";
+	static final String JAVABIN = JAVAHOME + Utilities.PATH_SEPARATOR + "bin" + Utilities.PATH_SEPARATOR + "java";
 	
 	ClientProcess[] processes = new ClientProcess[Utilities.PROCESSCOUNT];
 	

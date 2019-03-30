@@ -67,11 +67,15 @@ public class ClientProcess
 	}
 	
 	
-	public void run() throws IOException
+	public void run() throws IOException, ClassNotFoundException
 	{			
 		// WRITE - OBJECT - Give the server this process's PID
 		objOut.writeObject(data);
 		System.out.println(clientInfo + "WRITE");
+		
+		// READ - OBJECT - The server acknowledgement
+		data = (Data) objIn.readObject();
+		System.out.println(clientInfo + "READ: " + data.getMessage());
 	}
 
 	
@@ -155,8 +159,9 @@ public class ClientProcess
 	 * @param args The port through which to communicate with the server.
 	 * 
 	 * @throws IOException
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args) throws IOException
+	public static void main(String[] args) throws IOException, ClassNotFoundException
 	{
 		System.out.println("Subprocess PID " + MY_PID + " created by " + PARENT_PID);
 		

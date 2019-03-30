@@ -4,6 +4,8 @@ import java.io.File;
 
 public class Client
 {
+	static final int PROCESSCOUNT = 3;
+	
 	static final long MY_PID     = ProcessHandle.current().pid();
 	
 	static final String JAVAHOME  = System.getProperty("java.home");
@@ -13,16 +15,20 @@ public class Client
 	
 	static final String JAVABIN = JAVAHOME + SEPARATOR + "bin" + SEPARATOR + "java";
 	
+	static final int[] PORTS = {8080, 8081, 8082};
+	
+	ClientProcess[] processes = new ClientProcess[PROCESSCOUNT];
+	
 	ProcessBuilder processBuilder = null;
 	
 	Process process = null;
 
-	public void CreateSubprocess(String subProgram)
+	public void CreateSubprocess(String subProgram, int portNumber)
 	{
 		try
 		{
 			// https://stackoverflow.com/questions/636367/executing-a-java-application-in-a-separate-process
-	        this.processBuilder = new ProcessBuilder(JAVABIN, "-cp", CLASSPATH, subProgram, "8080");
+	        this.processBuilder = new ProcessBuilder(JAVABIN, "-cp", CLASSPATH, subProgram, Integer.toString(portNumber));
 	        
 	        this.process = this.processBuilder.inheritIO().start();
 		}
@@ -39,15 +45,18 @@ public class Client
 		// The current process that will spawn a child process
 		Client mainProc = new Client();
 		
-		// This class will be executed as a child process
-		ClientProcess subProc = new ClientProcess();
-		
-		// Create a child process
-		mainProc.CreateSubprocess(subProc.getClassName());
+		for (int i = 0; i < PROCESSCOUNT; i++)
+		{
+			// This class will be executed as a child process
+			mainProc.processes[i] = new ClientProcess();
+			
+			// Create a child process
+			mainProc.CreateSubprocess(mainProc.processes[i].getClassName(), 8080 + i);
+		}
 		
 		try
 		{
-			// Wait for the child process to die
+			// Wait for all child processes to die
 			mainProc.process.waitFor();
 		}
 		catch (InterruptedException e)

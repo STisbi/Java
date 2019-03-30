@@ -29,6 +29,8 @@ public class ClientProcess
 	int command = 0;
 	
 	String className = "";
+	String clientInfo  = "Process " + MY_PID + ": ";
+	String clientError = "Process " + MY_PID + ": ";
 	
 	ArrayList<File> fileList = new ArrayList<File>();
 
@@ -68,26 +70,16 @@ public class ClientProcess
 	}
 	
 	public void run() throws IOException
-	{
-		System.out.println("Client Info: Running.");
-		
-		try
-		{
-			TimeUnit.SECONDS.sleep(15);
-		}
-		catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}
-		
+	{			
 		// WRITE - OBJECT - Give the server this process's PID
 		objOut.writeObject(data);
+		System.out.println(clientInfo + "WRITE");
 	}
 
 	public void close() throws IOException
 	{
 		// Client info
-		System.out.println("Client Info: Closing streams, sockets, and the client connection.");
+		System.out.println(clientInfo + "Closing streams, sockets, and the client connection.");
 
 		// Close system input
 		reader.close();
@@ -124,11 +116,11 @@ public class ClientProcess
 		} 
 		catch (IOException e)
 		{
-			System.err.println("Client Error: Failed to connect to the server " + PORT_NAME + " on port " + Integer.toString(portNumber));
+			System.err.println(clientError + "Failed to connect to the server " + PORT_NAME + " on port " + Integer.toString(portNumber));
 		}
 
 		// Server Info
-		System.out.println("Client Info: Connected to server on port " + client.getRemoteSocketAddress().toString());
+		System.out.println(clientInfo + "Connected to server on port " + client.getRemoteSocketAddress().toString());
 
 		// Setup the output streams
 		try
@@ -139,7 +131,7 @@ public class ClientProcess
 		} 
 		catch (IOException e)
 		{
-			System.err.println("Server Error: Error occurred in setting up output streams.");
+			System.err.println(clientError + "Error occurred in setting up output streams.");
 			e.printStackTrace();
 		}
 
@@ -152,11 +144,9 @@ public class ClientProcess
 		} 
 		catch (IOException e)
 		{
-			System.err.println("Server Error: Error occurred in setting up input streams.");
+			System.err.println(clientError + "Error occurred in setting up input streams.");
 			e.printStackTrace();
 		}
-		
-		System.out.println("Client Info: Finished setup.");
 	}
 	
 	

@@ -2,10 +2,10 @@ package client;
 
 import java.io.File;
 
+import data.Utilities;
+
 public class Client
 {
-	static final int PROCESSCOUNT = 3;
-	
 	static final long MY_PID     = ProcessHandle.current().pid();
 	
 	static final String JAVAHOME  = System.getProperty("java.home");
@@ -15,9 +15,7 @@ public class Client
 	
 	static final String JAVABIN = JAVAHOME + SEPARATOR + "bin" + SEPARATOR + "java";
 	
-	static final int[] PORTS = {8080, 8081, 8082};
-	
-	ClientProcess[] processes = new ClientProcess[PROCESSCOUNT];
+	ClientProcess[] processes = new ClientProcess[Utilities.PROCESSCOUNT];
 	
 	ProcessBuilder processBuilder = null;
 	
@@ -45,13 +43,13 @@ public class Client
 		// The current process that will spawn a child process
 		Client mainProc = new Client();
 		
-		for (int i = 0; i < PROCESSCOUNT; i++)
+		for (int i = 0; i < Utilities.PROCESSCOUNT; i++)
 		{
 			// This class will be executed as a child process
 			mainProc.processes[i] = new ClientProcess();
 			
 			// Create a child process
-			mainProc.CreateSubprocess(mainProc.processes[i].getClassName(), 8080 + i);
+			mainProc.CreateSubprocess(mainProc.processes[i].getClassName(), Utilities.PORTS[i]);
 		}
 		
 		try

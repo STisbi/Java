@@ -2,29 +2,26 @@ package server;
 
 import java.io.IOException;
 
+import data.Utilities;
+
 public class Server
 {
-	static final int THREADCOUNT = 3;
-	
-	static final int[] PORTS = {8080, 8081, 8082};
-	
-	ServerThread[] threads = new ServerThread[THREADCOUNT];
-	
+	ServerThread[] threads = new ServerThread[Utilities.THREADCOUNT];
 	
 	public static void main(String [] args) throws IOException
 	{
 		Server server = new Server();
 		
-		for (int i = 0; i < THREADCOUNT; i++)
+		for (int i = 0; i < Utilities.THREADCOUNT; i++)
 		{
-			server.threads[i] = new ServerThread(Integer.toString(PORTS[i]));
+			server.threads[i] = new ServerThread(Integer.toString(Utilities.PORTS[i]));
 			
 			server.threads[i].start();
 		}
 		
 		try
 		{
-			for (int i = 0; i < THREADCOUNT; i++)
+			for (int i = 0; i < Utilities.THREADCOUNT; i++)
 			{
 				if (server.threads[i] != null)
 				{

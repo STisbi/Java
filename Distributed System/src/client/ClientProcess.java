@@ -12,8 +12,6 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
-
 import data.Data;
 
 public class ClientProcess
@@ -22,7 +20,6 @@ public class ClientProcess
 	static final long MY_PID     = ProcessHandle.current().pid();
 
 	static final String PORT_NAME = "localhost";
-	static final String FILE_PATH = System.getProperty("user.dir") + "\\src\\packageClient\\Files\\";
 
 	int portNumber = 8080;
 	
@@ -69,6 +66,7 @@ public class ClientProcess
 		this.portNumber = portNumber;
 	}
 	
+	
 	public void run() throws IOException
 	{			
 		// WRITE - OBJECT - Give the server this process's PID
@@ -76,6 +74,7 @@ public class ClientProcess
 		System.out.println(clientInfo + "WRITE");
 	}
 
+	
 	public void close() throws IOException
 	{
 		// Client info

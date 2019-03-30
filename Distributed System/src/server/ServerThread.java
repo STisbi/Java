@@ -101,11 +101,10 @@ public class ServerThread extends Thread
 		
 		try
 		{
-			fileWriter = new FileWriter(file);
+			// true allows appending to the file instead of overwriting
+			fileWriter = new FileWriter(file, true);
 			
-			CharSequence seq = serverInfo + Long.toString(clientPID) + Utilities.NEWLINE;
-			
-			fileWriter.append(seq.toString());
+			fileWriter.append(serverInfo + Long.toString(clientPID) + Utilities.NEWLINE);
 			
 			fileWriter.close();
 		}

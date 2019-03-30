@@ -16,12 +16,12 @@ class UserThread extends Thread
 {
 	public int[] array = new int[2];
 	
-	private int threadInt;
+	int threadInt;
 	
-	private Thread thread;
-	private String threadName;
-	private Data data;
-	private CountDownLatch latch;
+	Thread thread;
+	String threadName;
+	Data data;
+	CountDownLatch latch;
 
 	/**
 	 * Constructor for this class, assigns variables.
@@ -82,7 +82,7 @@ class UserThread extends Thread
  */
 public class CountDownLatchDemo
 {
-	final static int THREADCOUNT = 2;
+	static final int THREADCOUNT = 2;
 	
 	/**
 	 * Creates and runs the specified number of threads.
@@ -107,22 +107,35 @@ public class CountDownLatchDemo
 		}
 		System.out.println("\n___________________________________\n\n");
 		
-		// Create the threads
-		for(int i = 0; i < THREADCOUNT; i++)
+		
+//		// Create the threads
+//		for(int i = 0; i < THREADCOUNT; i++)
+//		{
+//			String threadName = "Thread_" + Integer.toString(data.array[i]);
+//			
+//			// Create a new thread, notice it needs the CDL
+//			threadArray[i] = new UserThread(threadName, data.array[i], data, latch);
+//			threadArray[i].start();
+//		}
+		int x = 0;
+		for (UserThread thread : threadArray)
 		{
-			String threadName = "Thread_" + Integer.toString(data.array[i]);
-			
-			// Create a new thread, notice it needs the CDL
-			UserThread newThread = new UserThread(threadName, data.array[i], data, latch);
-			
-			// Assign it to array and start it
-			threadArray[i] = newThread;
-			threadArray[i].start();
+			thread = new UserThread("x", data.array[x++], data, latch);
+			thread.start();
+		}
+		
+		for (UserThread thread : threadArray)
+		{
+			if (thread != null)
+			{
+				thread.join();
+			}
 		}
 		
 		// The main thread calls this and waits for the CDL to reach 0. The child threads
 		// all decrement the latch when the exit.
 		latch.await();
+		
 		
 		System.out.println("\n___________________________________\n\n");
 		// After

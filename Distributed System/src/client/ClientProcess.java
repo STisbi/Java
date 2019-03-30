@@ -12,18 +12,19 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import data.Data;
 
-public class Subprocess
+public class ClientProcess
 {
-	static final int PORT_NUMBER = 8080;
-	
 	static final long PARENT_PID = ProcessHandle.current().parent().get().pid();
 	static final long MY_PID     = ProcessHandle.current().pid();
 
 	static final String PORT_NAME = "localhost";
 	static final String FILE_PATH = System.getProperty("user.dir") + "\\src\\packageClient\\Files\\";
+
+	int portNumber = 8080;
 	
 	int command = 0;
 	
@@ -48,16 +49,36 @@ public class Subprocess
 	
 	Data data = new Data();
 	
-	public Subprocess()
+	public ClientProcess()
 	{
 		data.setClientPID(MY_PID);
 		
 		this.className = this.getClass().getName();	
 	}
 	
+	public int getPortNumber()
+	{
+		return this.portNumber;
+	}
+	
+	
+	public void setPortNumber(int portNumber)
+	{
+		this.portNumber = portNumber;
+	}
+	
 	public void run() throws IOException
 	{
 		System.out.println("Client Info: Running.");
+		
+		try
+		{
+			TimeUnit.SECONDS.sleep(15);
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
 		
 		// WRITE - OBJECT - Give the server this process's PID
 		objOut.writeObject(data);
@@ -99,11 +120,11 @@ public class Subprocess
 		// Try to connect to the server
 		try
 		{
-			client = new Socket(PORT_NAME, PORT_NUMBER);
+			client = new Socket(PORT_NAME, portNumber);
 		} 
 		catch (IOException e)
 		{
-			System.err.println("Client Error: Failed to connect to the server " + PORT_NAME + " on port " + Integer.toString(PORT_NUMBER));
+			System.err.println("Client Error: Failed to connect to the server " + PORT_NAME + " on port " + Integer.toString(portNumber));
 		}
 
 		// Server Info
@@ -139,19 +160,31 @@ public class Subprocess
 	}
 	
 	
+	/**
+	 * The actual client which communicates with the server
+	 * 
+	 * @param args The port through which to communicate with the server.
+	 * 
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException
 	{
 		System.out.println("Subprocess PID " + MY_PID + " created by " + PARENT_PID);
 		
-		Subprocess subProc = new Subprocess();
+		ClientProcess clientProc = new ClientProcess();
+		
+		if (args != null && args.length > 0)
+		{
+			clientProc.setPortNumber(Integer.parseInt(args[0]));
+		}
 		
 		// This is a separate function to allow the Client to call this constructor without setting up a connection
-		// Otherwise a bug is introduced whereby the client hangs on setting up a connection
-		subProc.setupConnection();
+		// Otherwise a bug is introduced whereby the subprocess hangs on setting up a connection because the Client already set it up
+		clientProc.setupConnection();
 		
-		subProc.run();
+		clientProc.run();
 		
-		subProc.close();
+		clientProc.close();
 		
 		System.out.println(MY_PID + ": Exiting process.");
 	}

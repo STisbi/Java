@@ -9,6 +9,9 @@ import data.Utilities;
 
 public class Server
 {
+	// Incremented by each thread
+	static int counter = 0;
+	
 	final String PATH_TO_FILES  = Utilities.USERDIR + Utilities.PATH_SEPARATOR + "src" + Utilities.PATH_SEPARATOR + "serverFiles";
 	
 	Semaphore semaphore = new Semaphore(Utilities.PERMITS, true);

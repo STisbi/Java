@@ -58,6 +58,6 @@ public class Client
 			e.printStackTrace();
 		}
 		
-		System.out.println(MY_PID + ": Exiting process.");
+		System.out.println(MY_PID + ": Exiting main process.");
 	}
 }

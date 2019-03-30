@@ -65,76 +65,77 @@ public class ServerThread extends Thread
 	{
 		setupConnection();
 		
-		// Server info
-		System.out.println(serverInfo + "Waiting for client command.");
-		
-		long clientPID = 0;
-		
-		// READ - OBJECT - Get the client's PID
-		try
+		for (int x = 0; x < Utilities.LOOP_COUNT; x++)
 		{
-			clientPID = ((Data) objIn.readObject()).getClientPID();
-		}
-		catch (ClassNotFoundException | IOException e)
-		{
-			e.printStackTrace();
-		}
-		
-		System.out.println(serverInfo + "READ: " + "Client's PID is " + clientPID);
-		
-		////////////////////////////
-		//                        //
-		// CRITICAL SECTION START //
-		//                        //
-		////////////////////////////
-		
-		try
-		{
-			// Blocks if no permits are available
-			this.semaphore.acquire();
-		}
-		catch (InterruptedException e1)
-		{
-			System.err.println(serverError + "Interrupted while waiting to acquire semaphore.");
-			e1.printStackTrace();
-		}
-		
-		try
-		{
-			// true allows appending to the file instead of overwriting
-			fileWriter = new FileWriter(file, true);
+			long clientPID = 0;
 			
-			fileWriter.append(serverInfo + Long.toString(clientPID) + Utilities.NEWLINE);
+			// READ - OBJECT - Get the client's PID
+			try
+			{
+				clientPID = ((Data) objIn.readObject()).getClientPID();
+			}
+			catch (ClassNotFoundException | IOException e)
+			{
+				e.printStackTrace();
+			}
 			
-			fileWriter.close();
+			System.out.println(serverInfo + "READ: " + "Client's PID is " + clientPID);
+			
+			////////////////////////////
+			//                        //
+			// CRITICAL SECTION START //
+			//                        //
+			////////////////////////////
+			
+			try
+			{
+				// Blocks if no permits are available
+				this.semaphore.acquire();
+			}
+			catch (InterruptedException e1)
+			{
+				System.err.println(serverError + "Interrupted while waiting to acquire semaphore.");
+				e1.printStackTrace();
+			}
+			
+			try
+			{
+				// true allows appending to the file instead of overwriting
+				fileWriter = new FileWriter(file, true);
+				
+				// Writes to the file this thread's ID, the client's PID, and the current count (post-increment)
+				fileWriter.append(serverInfo + "Process: " + Long.toString(clientPID) + " Counter: " + Server.counter++ + Utilities.NEWLINE);
+				
+				fileWriter.close();
+			}
+			catch (IOException e1)
+			{
+				e1.printStackTrace();
+			}
+			
+			// Release the semaphore
+			this.semaphore.release();
+			
+			//////////////////////////
+			//                      //
+			// CRITICAL SECTION END //
+			//                      //
+			//////////////////////////
+			
+			Data outData = new Data();
+			
+			// WRITE - OBJECT - Send an acknowledgement message back to the client
+			outData.setMessage("File accessed.");
+			try
+			{
+				objOut.writeObject(outData);
+			}
+			catch (IOException e1)
+			{
+				e1.printStackTrace();
+			}
+			System.out.println(serverInfo + "WRITE");
 		}
-		catch (IOException e1)
-		{
-			e1.printStackTrace();
-		}
-		
-		// Release the semaphore
-		this.semaphore.release();
-		
-		//////////////////////////
-		//                      //
-		// CRITICAL SECTION END //
-		//                      //
-		//////////////////////////
-		
-		Data outData = new Data();
-		
-		// WRITE - OBJECT - Send an acknowledgement message back to the client
-		outData.setMessage("File accessed.");
-		try
-		{
-			objOut.writeObject(outData);
-		}
-		catch (IOException e1)
-		{
-			e1.printStackTrace();
-		}
-		System.out.println(serverInfo + "WRITE");
 		
 		try
 		{

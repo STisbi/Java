@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 import data.Data;
+import data.Utilities;
 
 public class ClientProcess
 {
@@ -68,14 +69,19 @@ public class ClientProcess
 	
 	
 	public void run() throws IOException, ClassNotFoundException
-	{			
-		// WRITE - OBJECT - Give the server this process's PID
-		objOut.writeObject(data);
-		System.out.println(clientInfo + "WRITE");
-		
-		// READ - OBJECT - The server acknowledgement
-		data = (Data) objIn.readObject();
-		System.out.println(clientInfo + "READ: " + data.getMessage());
+	{
+		for (int x = 0; x < Utilities.LOOP_COUNT; x++)
+		{
+			data.setClientPID(MY_PID);
+			
+			// WRITE - OBJECT - Give the server this process's PID
+			objOut.writeObject(data);
+			System.out.println(clientInfo + "WRITE");
+			
+			// READ - OBJECT - The server acknowledgement
+			data = (Data) objIn.readObject();
+			System.out.println(clientInfo + "READ: " + data.getMessage());
+		}
 	}
 
 	
@@ -180,7 +186,7 @@ public class ClientProcess
 		
 		clientProc.close();
 		
-		System.out.println(MY_PID + ": Exiting process.");
+		System.out.println(MY_PID + ": Exiting child process.");
 	}
 }
 

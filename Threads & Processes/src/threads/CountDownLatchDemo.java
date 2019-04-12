@@ -107,16 +107,6 @@ public class CountDownLatchDemo
 		}
 		System.out.println("\n___________________________________\n\n");
 		
-		
-//		// Create the threads
-//		for(int i = 0; i < THREADCOUNT; i++)
-//		{
-//			String threadName = "Thread_" + Integer.toString(data.array[i]);
-//			
-//			// Create a new thread, notice it needs the CDL
-//			threadArray[i] = new UserThread(threadName, data.array[i], data, latch);
-//			threadArray[i].start();
-//		}
 		int x = 0;
 		for (UserThread thread : threadArray)
 		{

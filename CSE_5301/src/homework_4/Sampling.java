@@ -8,17 +8,18 @@ import java.util.Random;
 public class Sampling
 {
 	// The SEED value
-	final int SEED = 1;
+	private final int SEED = 1;
 	
-	int numberOfSamples = 0;
+	private int numberOfSamples = 0;
 	
-	String[] userArgs = null;
+	private String[] userArgs = null;
 	
-	List<Double> parameters = new ArrayList<Double>();
+	private List<Float> parameters = new ArrayList<Float>();
+	private List<Float> samples    = new ArrayList<Float>();
 	
-	HashMap<String, Distribution> map = new HashMap<String, Distribution>();
+	private HashMap<String, Distribution> map = new HashMap<String, Distribution>();
 	
-	Distribution distribution = Distribution.UNKNOWN;
+	private Distribution distribution = Distribution.UNKNOWN;
 	
 	enum Distribution
 	{
@@ -53,24 +54,28 @@ public class Sampling
 	
 	public void getSamples()
 	{
-		System.out.println(String.format("Getting %d samples for the %s distribution. The seed value is %d.", this.numberOfSamples, this.distribution.toString(), this.SEED));
+		System.out.println(String.format("Getting %d samples for the %s distribution. The seed value is %d.", this.numberOfSamples, this.getDisitrubtion().toString(), this.SEED));
 		
-		switch (this.distribution)
+		switch (this.getDisitrubtion())
 		{
 			case BERNOULLI:
 			{
-				getBernoulliSamples();
+				this.getBernoulliSamples(this.numberOfSamples, this.getParameter(0));
+				break;
+			}
+			case BINOMIAL:
+			{
+				this.getBinomialSamples(this.numberOfSamples, Math.round(this.getParameter(0)), this.getParameter(1));
 				break;
 			}
 			case GEOMETRIC:
 			{
-				
+				this.getGeometricSamples(this.numberOfSamples, this.getParameter(0));
 				break;
 			}
 			case NEGATIVE_BINOMIAL:
 			{
-				
-				
+				this.getNegativeBinomial(this.numberOfSamples, Math.round(this.getParameter(0)), this.getParameter(1));
 				break;
 			}
 			case POISSON:
@@ -122,12 +127,28 @@ public class Sampling
 		
 		arguments = String.format("The user requested %d samples from a %s distribution with parameters ", this.numberOfSamples, this.distribution.toString());
 		
-		for (Double parameters : this.parameters)
+		for (Float parameters : this.parameters)
 		{
 			arguments += String.format("%.2f ", parameters);
 		}
 		
 		System.out.println(arguments);
+	}
+	
+	public void printSamples(String distributionName)
+	{
+		System.out.print(distributionName + ": ");
+		this.samples.forEach(sample -> System.out.print(String.format("%.0f ", sample)));
+	}
+	
+	public Distribution getDisitrubtion()
+	{
+		return this.distribution;
+	}
+	
+	public float getParameter(int index)
+	{
+		return this.parameters.get(index);
 	}
 	
 	private void populateMap()
@@ -144,6 +165,7 @@ public class Sampling
 		map.put("normal", 		Distribution.NORMAL);
 	}
 	
+	
 	private void parseArguments()
 	{
 		// The number of samples
@@ -158,24 +180,72 @@ public class Sampling
 			}
 		}
 		
-		// The parameters
+		// Note the starting index
 		for (int i = 2; i < this.userArgs.length; i ++)
 		{
-			parameters.add(Double.parseDouble(this.userArgs[i]));
+			parameters.add(Float.parseFloat(this.userArgs[i]));
 		}
 	}
 	
-	private void getBernoulliSamples()
+	private void getBernoulliSamples(int sampleSize, double probability)
 	{
 		Random random = new Random();
 		random.setSeed(this.SEED);
 		
-		double probability = this.parameters.get(0);
-		
-		for (int i = 0; i < this.numberOfSamples; i++)
+		for (int i = 0; i < sampleSize; i++)
 		{
-			System.out.print(String.format("%s ", random.nextDouble() <= probability ? "1" : "0"));
+			 this.samples.add((float) (random.nextFloat() <= probability ? 1 : 0));
 		}
+	}
+	
+	private void getBinomialSamples(int sampleSize, int n, float probability)
+	{
+		ArrayList<Float> localList = new ArrayList<Float>();
+		
+		// Runs for however many samples we need
+		for (int i = 0; i < sampleSize; i++)
+		{
+			// Each binomial sample consists of a set of bernoulli samples
+			this.getBernoulliSamples(n, probability);
+			
+			float sum = 0;
+			for (Float sample : this.samples)
+			{
+				if (sample == 1)
+				{
+					sum++;
+				}
+			}
+			
+			// Remove the last sample
+			this.samples.clear();
+
+			localList.add(sum);
+		}
+		
+		this.samples = localList;
+	}
+	
+	private void getGeometricSamples(int sampleSize, float probability)
+	{
+		float firstSuccess = 1;
+		
+		ArrayList<Float> localList = new ArrayList<Float>();
+		
+		for (int i = 0; i < sampleSize; i++)
+		{
+			this.getBernoulliSamples(sampleSize, probability);
+			
+			// Plus 1 since these lists are 0 based
+			localList.add((float) (this.samples.indexOf(firstSuccess) + 1));
+		}
+		
+		this.samples = localList;
+	}
+	
+	private void getNegativeBinomial(int sampleSize, int k, float probability)
+	{
+		
 	}
 
 	public static void main(String[] args)
@@ -183,6 +253,7 @@ public class Sampling
 		Sampling sampling = new Sampling(args);
 		
 		sampling.getSamples();
+		sampling.printSamples(sampling.getDisitrubtion().toString());
 	}
 
 }

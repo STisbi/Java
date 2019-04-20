@@ -19,6 +19,8 @@ public class Sampling
 	
 	private HashMap<String, Distribution> map = new HashMap<String, Distribution>();
 	
+	Random random = new Random();
+	
 	private Distribution distribution = Distribution.UNKNOWN;
 	
 	enum Distribution
@@ -41,6 +43,8 @@ public class Sampling
 		if (args.length != 0)
 		{
 			this.userArgs = args;
+			
+			random.setSeed(SEED);
 			
 			populateMap();
 			parseArguments();
@@ -188,13 +192,10 @@ public class Sampling
 	}
 	
 	private void getBernoulliSamples(int sampleSize, double probability)
-	{
-		Random random = new Random();
-		random.setSeed(this.SEED);
-		
+	{	
 		for (int i = 0; i < sampleSize; i++)
 		{
-			 this.samples.add((float) (random.nextFloat() <= probability ? 1 : 0));
+			 this.samples.add((float) (this.random.nextFloat() <= probability ? 1 : 0));
 		}
 	}
 	
@@ -217,7 +218,7 @@ public class Sampling
 				}
 			}
 			
-			// Remove the last sample
+			// Imperative! Remove the last sample
 			this.samples.clear();
 
 			localList.add(sum);
@@ -238,6 +239,9 @@ public class Sampling
 			
 			// Plus 1 since these lists are 0 based
 			localList.add((float) (this.samples.indexOf(firstSuccess) + 1));
+			
+			// Imperative! Remove the last sample
+			this.samples.clear();
 		}
 		
 		this.samples = localList;
@@ -245,8 +249,41 @@ public class Sampling
 	
 	private void getNegativeBinomial(int sampleSize, int k, float probability)
 	{
+		ArrayList<Float> localList = new ArrayList<Float>();
 		
+		for (int i = 0; i < sampleSize; i++)
+		{
+			float kthSuccess = 0;
+			
+			this.getBernoulliSamples(sampleSize, probability);
+			
+			int x = 0;
+			while (kthSuccess < k)
+			{
+				if (x < this.samples.size() - 1)
+				{
+					if (this.samples.get(x++) == 1)
+					{
+						kthSuccess++;
+					}
+				}
+				else
+				{
+					break;
+				}
+			}
+			
+			// Imperative! Remove the last sample
+			this.samples.clear();
+			
+			// Minus one since the above post increments; after it found the kth success
+			// it incremented once more.
+			localList.add((float) x - 1);
+		}
+		
+		this.samples = localList;
 	}
+	
 
 	public static void main(String[] args)
 	{

@@ -84,8 +84,7 @@ public class Sampling
 			}
 			case POISSON:
 			{
-				
-				
+				this.getPoisson(this.numberOfSamples, this.getParameter(0));
 				break;
 			}
 			case ARB_DISCRETE:
@@ -282,6 +281,26 @@ public class Sampling
 		}
 		
 		this.samples = localList;
+	}
+	
+	private void getPoisson(int sampleSize, float lambda)
+	{
+		// Computing e^(-lambda)
+		double compareValue = Math.exp(lambda * (-1));
+		
+		// Remove any previous sample values
+		this.samples.clear();
+		
+		for (int sampleX = 0; sampleX < sampleSize; sampleX++)
+		{
+			int i = 1;
+			while (this.random.nextFloat() > compareValue)
+			{
+				i++;
+			}
+			
+			this.samples.add((float) i);
+		}
 	}
 	
 

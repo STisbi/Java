@@ -60,6 +60,8 @@ public class Sampling
 	{
 		System.out.println(String.format("Getting %d samples for the %s distribution. The seed value is %d.", this.numberOfSamples, this.getDisitrubtion().toString(), this.SEED));
 		
+		this.samples.clear();
+		
 		switch (this.getDisitrubtion())
 		{
 			case BERNOULLI:
@@ -90,19 +92,16 @@ public class Sampling
 			case ARB_DISCRETE:
 			{
 				
-				
 				break;
 			}
 			case UNIFORM:
 			{
-				
-				
+				this.getUniform(this.numberOfSamples, this.getParameter(0), this.getParameter(1));
 				break;
 			}
 			case EXPONENTIAL:
 			{
-				
-				
+				this.getExponential(this.numberOfSamples, this.getParameter(0));
 				break;
 			}
 			case GAMMA:
@@ -300,6 +299,30 @@ public class Sampling
 			}
 			
 			this.samples.add((float) i);
+		}
+	}
+	
+	private void getUniform(int sampleSize, float a, float b)
+	{
+		for (int i = 0; i < sampleSize; i++)
+		{
+			float step_1 = (b - a);
+			float step_2 = step_1 * this.random.nextFloat();
+			float step_3 = step_2 + a;
+			
+			this.samples.add(step_3);
+		}
+	}
+	
+	private void getExponential(int sampleSize, float lambda)
+	{
+		for (int i = 0; i < sampleSize; i++)
+		{
+			float step_1 = (float) Math.log(this.random.nextFloat());
+			float step_2 = step_1 * -1;
+			float step_3 = step_2 / lambda;
+			
+			this.samples.add(step_3);
 		}
 	}
 	

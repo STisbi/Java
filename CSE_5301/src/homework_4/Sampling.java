@@ -5,6 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+
+/**
+ * This class satisfies the requirements of homework 4.
+ * It generates samples from a given set of distributions based on the user's description.
+ * The formula's and methods used to get a sample from a particular distribution were taken from material
+ * in lecture as well as lecture notes found online. It has been included in this package.
+ * 
+ * @author STisb
+ *
+ */
 public class Sampling
 {
 	// The SEED value
@@ -19,7 +29,7 @@ public class Sampling
 	
 	private HashMap<String, Distribution> map = new HashMap<String, Distribution>();
 	
-	Random random = new Random();
+	private Random random = new Random();
 	
 	private Distribution distribution = Distribution.UNKNOWN;
 	
@@ -38,6 +48,12 @@ public class Sampling
 		UNKNOWN
 	}
 	
+	
+	/**
+	 * The construction site. It needs user input to continue execution.
+	 * 
+	 * @param args Given in the format (number of samples), (the desired distribution), (parameter_1), (parameter_2), ... , (parameter_i)
+	 */
 	public Sampling(String[] args)
 	{
 		if (args.length != 0)
@@ -56,10 +72,16 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * An instance of this class would call this method to get the desired samples. Delegates to the appropriate method.
+	 */
 	public void getSamples()
 	{
+		// Give the user some affirmation that their request is being handled
 		System.out.println(String.format("Getting %d samples for the %s distribution. The seed value is %d.", this.numberOfSamples, this.getDisitrubtion().toString(), this.SEED));
 		
+		// Be nice and clear any previous runs
 		this.samples.clear();
 		
 		switch (this.getDisitrubtion())
@@ -123,11 +145,13 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * Prints in a formatted way, the arguments the user entered; for their affirmation.
+	 */
 	public void printUserArguments()
 	{
-		String arguments = new String();
-		
-		arguments = String.format("The user requested %d samples from a %s distribution with parameters ", this.numberOfSamples, this.distribution.toString());
+		String arguments = String.format("The user requested %d samples from a %s distribution with parameters ", this.numberOfSamples, this.distribution.toString());
 		
 		for (Float parameters : this.parameters)
 		{
@@ -137,22 +161,50 @@ public class Sampling
 		System.out.println(arguments);
 	}
 	
+	
+	/**
+	 * Rather than print the samples from the method itself, it was separated into it's own method so that
+	 * if a method for one sampling distribution called another getSample method, it did would not print
+	 * that intermediate step.
+	 * 
+	 * @param distributionName The name of the distribution. It DOES NOT print that samples distribution, rather it is only
+	 * for formatting and beautification purposes.
+	 */
 	public void printSamples(String distributionName)
 	{
 		System.out.print(distributionName + ": ");
 		this.samples.forEach(sample -> System.out.print(String.format("%.0f ", sample)));
 	}
 	
+	
+	/**
+	 * Gets the enum of distribution that was requested when the class was instanced.
+	 * 
+	 * @return An enumeration of the distribution requested when the class was instanced.
+	 */
 	public Distribution getDisitrubtion()
 	{
 		return this.distribution;
 	}
 	
+	
+	/**
+	 * Wrapper function for the array list used. Created so that the array list variable would not be accessed directly.
+	 * 
+	 * @param index The position of the value desired.
+	 * 
+	 * @return The value at the given index.
+	 */
 	public float getParameter(int index)
 	{
 		return this.parameters.get(index);
 	}
 	
+	
+	/**
+	 * Populates the HashMap with a mapping from a set of strings describing the distribution to their enum counterpart.
+	 * The string key is identical to the spelling used in the homework description.
+	 */
 	private void populateMap()
 	{
 		map.put("bernoulli", 	Distribution.BERNOULLI);
@@ -168,6 +220,9 @@ public class Sampling
 	}
 	
 	
+	/**
+	 * Parses the user argument in the given method described in the constructor {@link homework_4.Sampling#Sampling(String[])}
+	 */
 	private void parseArguments()
 	{
 		// The number of samples
@@ -189,6 +244,14 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples using the given probability from a Bernoulli distribution.
+	 * If the random number is less than the given probability then the sample is 1, else 0.
+	 * 
+	 * @param sampleSize  The number of samples requested by the user from this distribution.
+	 * @param probability A given probability specified by the user.
+	 */
 	private void getBernoulliSamples(int sampleSize, double probability)
 	{	
 		for (int i = 0; i < sampleSize; i++)
@@ -197,6 +260,18 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples using the given probability and n value from a Binomial
+	 * distribution. The algorithm proceeds by first getting n samples from a Bernoulli distribution
+	 * using the given probability. The number of 1's in that sample are counted and that value is
+	 * taken to be a sample for the Binomial distribution. This is repeated for however many samples
+	 * are requested.
+	 * 
+	 * @param sampleSize  The number of samples requested by the user from this distribution.
+	 * @param n           A parameter of the Binomial distribution.
+	 * @param probability A given probability specified by the user.
+	 */
 	private void getBinomialSamples(int sampleSize, int n, float probability)
 	{
 		ArrayList<Float> localList = new ArrayList<Float>();
@@ -225,6 +300,16 @@ public class Sampling
 		this.samples = localList;
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples using the given probability from a Geometric distribution.
+	 * Similar to the Binomial distribution, it first gets Bernoulli samples. Then the value for however
+	 * many trials it took before the first success is obatined and this value is used as a sample. The
+	 * process is repeated for however many samples are requested.
+	 * 
+	 * @param sampleSize  The number of samples requested by the user from this distribution.
+	 * @param probability A given probability specified by the user.
+	 */
 	private void getGeometricSamples(int sampleSize, float probability)
 	{
 		float firstSuccess = 1;
@@ -245,6 +330,17 @@ public class Sampling
 		this.samples = localList;
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples using the given probability and k value for a Geometric
+	 * distribution. Similar to the Binomial and Geometric methods, it first gets a number of Bernoulli
+	 * samples. The number of trials it took before k successes were obtained is used as a sample.
+	 * The process is then repeated for however many samples have been requested.
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param k A parameter that represents how many success are needed.
+	 * @param probability A given probability specified by the user.
+	 */
 	private void getNegativeBinomial(int sampleSize, int k, float probability)
 	{
 		ArrayList<Float> localList = new ArrayList<Float>();
@@ -282,6 +378,16 @@ public class Sampling
 		this.samples = localList;
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples from a Poisson distribution. Generates a random
+	 * number and compares it to a value formulated from lambda. The number of trials before
+	 * the random number is less than the formulated value is taken as a sample. The process
+	 * is repeated for however many samples have been requested. 
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param lambda A parameter of the Poisson distribution.
+	 */
 	private void getPoisson(int sampleSize, float lambda)
 	{
 		// Computing e^(-lambda)
@@ -302,6 +408,16 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples from a Uniform distribution. The individual steps
+	 * in this process were separated out so that it is easier to read. The sample is simply 
+	 * calculated using this formula, a + (b - a)U, where U is the random number generated.
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param a A parameter of the uniform distribution.
+	 * @param b A parameter of the uniform distribution.
+	 */
 	private void getUniform(int sampleSize, float a, float b)
 	{
 		for (int i = 0; i < sampleSize; i++)
@@ -314,6 +430,16 @@ public class Sampling
 		}
 	}
 	
+	
+	/**
+	 * Gets the requested number of samples from a Exponential distribution. Similar to the 
+	 * Uniform distribution, the individual steps have been separated out so that it is easier
+	 * to read. The sample is generated using the formula, -ln(U)/lambda, where U is the random 
+	 * number generated.
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param lambda A parameter of the Exponential distribution.
+	 */
 	private void getExponential(int sampleSize, float lambda)
 	{
 		for (int i = 0; i < sampleSize; i++)
@@ -327,11 +453,20 @@ public class Sampling
 	}
 	
 
+	/**
+	 * Runs the class {@link Sampling}.
+	 * 
+	 * @param args User arguments following the pattern specified in the homework description, {@link homework_4.Sampling#Sampling(String[])} 
+	 */
 	public static void main(String[] args)
 	{
+		// In an instant
 		Sampling sampling = new Sampling(args);
 		
+		// go get some samples
 		sampling.getSamples();
+		
+		// and print them.
 		sampling.printSamples(sampling.getDisitrubtion().toString());
 	}
 

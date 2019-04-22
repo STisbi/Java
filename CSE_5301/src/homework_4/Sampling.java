@@ -171,7 +171,16 @@ public class Sampling
 	public void printSamples(String distributionName)
 	{
 		System.out.print(distributionName + ": ");
-		this.samples.forEach(sample -> System.out.print(String.format("%.0f ", sample)));
+		
+		// This does not work on UTA's omega version of Java
+//		this.samples.forEach(sample -> System.out.print(String.format("%.0f ", sample)));
+		
+		for (Float sample : this.samples)
+		{
+			System.out.print(String.format("%.0f ", sample));
+		}
+		
+		System.out.println("\n");
 	}
 	
 	

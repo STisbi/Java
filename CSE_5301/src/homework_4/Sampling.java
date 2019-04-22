@@ -113,7 +113,7 @@ public class Sampling
 			}
 			case ARB_DISCRETE:
 			{
-				
+				this.getArbitraryDiscrete(this.numberOfSamples, this.parameters);
 				break;
 			}
 			case UNIFORM:
@@ -128,14 +128,12 @@ public class Sampling
 			}
 			case GAMMA:
 			{
-				
-				
+				this.getGamma(this.numberOfSamples, this.getParameter(0), this.getParameter(1));
 				break;
 			}
 			case NORMAL:
 			{
-				
-				
+				this.getNormal(this.numberOfSamples, this.getParameter(0), this.getParameter(1));
 				break;
 			}
 			default:
@@ -383,7 +381,9 @@ public class Sampling
 	 * Gets the requested number of samples from a Poisson distribution. Generates a random
 	 * number and compares it to a value formulated from lambda. The number of trials before
 	 * the random number is less than the formulated value is taken as a sample. The process
-	 * is repeated for however many samples have been requested. 
+	 * is repeated for however many samples have been requested. The formula used for this
+	 * algorithm is found in the online resource; product sum from i = 1 to I + 1 of U subscript
+	 * i < e ^ -lambda. Where X = the smallest value of I.
 	 * 
 	 * @param sampleSize The number of samples requested by the user from this distribution.
 	 * @param lambda A parameter of the Poisson distribution.
@@ -399,13 +399,64 @@ public class Sampling
 		for (int sampleX = 0; sampleX < sampleSize; sampleX++)
 		{
 			int i = 1;
-			while (this.random.nextFloat() > compareValue)
+			float productPI = this.random.nextFloat();
+			while (productPI < compareValue)
 			{
+				productPI *= this.random.nextFloat();
 				i++;
 			}
 			
 			this.samples.add((float) i);
 		}
+	}
+	
+	
+	/**
+	 * Gets the requested number of samples from an Arbitrary Discrete distribution. A sample is
+	 * generated from this distribution using the formula F(x) >= U >= F(x - 1). Where U is the 
+	 * random number generated. F(x) is found by summing the individual probabilities given in the
+	 * list of parameters. The x value which causes the above formula to be true is taken to be a 
+	 * sample of this distribution. The process is repeated for however many samples have been requested.
+	 * Note that the list of parameters is a float value and must be given as such. Ex: Dice roll
+	 * probabilities must be given as .1667 not as 1/6. 
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param parameters A list of probabilities for this distribution.
+	 */
+	private void getArbitraryDiscrete(int sampleSize, List<Float> parameters)
+	{
+		float randomU      = 0;
+		float fOfX         = 0;
+		float fOfXMinusOne = 0;
+		
+		ArrayList<Float> localList = new ArrayList<Float>();
+		
+		// Sum together the probabilities
+		for (int i = 0; i < sampleSize; i++)
+		{
+			randomU = this.random.nextFloat();
+			
+			for (int x = 0; x < parameters.size(); x++)
+			{
+				fOfX += parameters.get(x);
+				
+				if (x > 0)
+				{
+					fOfXMinusOne += parameters.get(x - 1);	
+				}
+				
+				if (randomU <= fOfX && randomU >= fOfXMinusOne)
+				{
+					localList.add((float) x);
+				}
+			}	
+		}
+		
+		// Remove any previous samples
+		this.samples.clear();
+		
+		// Set the new samples
+		this.samples = localList;
 	}
 	
 	
@@ -449,6 +500,86 @@ public class Sampling
 			float step_3 = step_2 / lambda;
 			
 			this.samples.add(step_3);
+		}
+	}
+	
+	
+	/**
+	 * Gets the requested number of samples from a Gamma distribution. Because a Gamma distribution is
+	 * n Exponential distributions summed together this algorithm proceeds the same way. The sum of alpha
+	 * Exponential distributions is taken to be a single sample for the Gamme distribution. The process is
+	 * then repeated for however many samples have been requested.
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param alpha      A parameter of the Gamma distribution; the number of times to run the exponential distribution.
+	 * @param lambda     A parameter of the Gamma distribution.
+	 */
+	private void getGamma(int sampleSize, float alpha, float lambda)
+	{
+		List<Float> localList = new ArrayList<Float>();
+		
+		for (int i = 0; i < sampleSize; i++)
+		{
+			this.samples.clear();
+			
+			this.getExponential((int) alpha, lambda);
+			
+			float sum = 0;
+			for (Float sample : this.samples)
+			{
+				sum += sample;
+			}
+			
+			localList.add(sum);
+		}
+		
+		this.samples = localList;
+	}
+	
+	
+	/**
+	 * Gets the requested number of samples from a Normal distribution. The sample is obtained in a formulated
+	 * fashion as follows; Z1 = sqrt(-2 ln(u1)) * cos(2 * pi * u2), Z2 = sqrt(-2 ln(u1)) * sin(2 * pi * u2). Z1
+	 * and Z2 are then further modified to fit the given normal distribution by way of; mu + sigma(Z1),
+	 * mu + sigma(Z2). Both Z1 and Z2 are taken to be samples for the normal distribution. If the number of samples
+	 * requested is an odd number, both values are calculated but the latter Z2 removed at the very end.
+	 * 
+	 * @param sampleSize The number of samples requested by the user from this distribution.
+	 * @param mu         The population mean for this particular normal distribution.
+	 * @param sigma      The population standard deviation for this particular normal distribution. 
+	 */
+	private void getNormal(int sampleSize, float mu, float sigma)
+	{
+		this.samples.clear();
+		
+		for (int i = 0; i < sampleSize; i++)
+		{
+			float u1 = this.random.nextFloat();
+			float u2 = this.random.nextFloat();
+			
+			float z1 = (float) Math.cos(2 * Math.PI * u2);
+			float z2 = (float) Math.sin(2 * Math.PI * u2);
+			
+			float commonStep = (float) ((-2) * Math.log(u1));
+			
+			z1 = (float) Math.sqrt(commonStep);
+			z2 = (float) Math.sqrt(commonStep);
+			
+			z1 *= commonStep;
+			z2 *= commonStep;
+			
+			float z1_castToMyNormal = mu + (sigma * z1);
+			float z2_castToMyNormal = mu + (sigma * z2);
+			
+			this.samples.add(z1_castToMyNormal);
+			this.samples.add(z2_castToMyNormal);
+		}
+		
+		// If the sample size requested is odd
+		if (sampleSize % 2 != 0)
+		{
+			// Remove the last element
+			this.samples.remove(this.samples.size() - 1);
 		}
 	}
 	
